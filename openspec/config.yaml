@@ -1,1 +1,37 @@
 schema: spec-driven
+
+
+context: |
+  O ProjetoAS e o projeto do Grupo 22 da disciplina de Analise e Desenvolvimento de Sistemas (AS).
+  O produto e o Monitorize Internal Animals Unit (MIAU).
+
+  Frentes de requisitos conhecidas:
+  - UC-01: consultar dados dos animais e restricao de acesso.
+  - UC-02: marcar consulta e evitar conflito de horario.
+  - UC-03: monitorizar telemetria e alertar anomalia.
+  - UC-04: consultar estado de internamento.
+
+  Requisitos relevantes:
+  - BR-01 a BR-04: regras de negocio.
+  - RNF-01 a RNF-06: requisitos nao funcionais.
+
+  Estado atual:
+  - Nao foram identificados codigo-fonte, framework, banco de dados ou CI no repositorio.
+  - Documentacao e requisitos estao concentrados em openspec/ e assets/.
+
+  Convencoes:
+  - Requisitos obrigatorios usam SHALL.
+  - Cenarios usam WHEN e THEN.
+  - IDs de requisito e cenario devem permanecer estaveis.
+
+rules:
+  proposal:
+    - Manter contexto, problema, solucao e requisitos na proposta.
+    - Nao iniciar implementacao durante a proposta.
+  specs:
+    - Escrever requisitos com SHALL.
+    - Criar cenarios WHEN e THEN.
+    - Usar deltas apenas em mudancas; specs principais nao devem conter cabecalhos de delta.
+  tasks:
+    - Decompor trabalho em tarefas pequenas e verificaveis.
+    - Marcar tarefa como concluida apenas quando implementada.
