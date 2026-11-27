@@ -1,6 +1,14 @@
 const API_BASE_URL = process.env.API_BASE_URL ?? 'http://127.0.0.1:4000';
 const ANIMAL_ID = '11111111-1111-4111-8111-111111111111';
 
+class ApiError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+  }
+}
+
 function readCookie(cookieHeader, name) {
   if (!cookieHeader) return null;
   const entry = cookieHeader
@@ -18,7 +26,16 @@ async function fetchFromApi(path, token) {
   });
 
   if (!response.ok) {
-    throw new Error(`A API devolveu ${response.status} para ${path}.`);
+    let message = `A API devolveu ${response.status} para ${path}.`;
+    try {
+      const body = await response.json();
+      if (typeof body?.message === 'string' && body.message) {
+        message = body.message;
+      }
+    } catch {
+      // Mantém a mensagem genérica quando o corpo não é JSON.
+    }
+    throw new ApiError(response.status, message);
   }
 
   return response.json();
@@ -39,7 +56,10 @@ export async function getServerSideProps({ req }) {
 
     return { props: { animal, history } };
   } catch (error) {
-    return { props: { error: error.message } };
+    const message = error instanceof ApiError && error.status === 403
+      ? `Acesso negado: ${error.message}`
+      : error.message;
+    return { props: { error: message } };
   }
 }
 

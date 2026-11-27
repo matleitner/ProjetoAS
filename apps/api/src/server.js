@@ -2,11 +2,17 @@ import http from 'node:http';
 import { config } from './config.js';
 import { sendError } from './http.js';
 import { corsHeaders, handleAnimaisRoutes } from './modules/animais/routes.js';
+import { handleConsultasRoutes } from './modules/consultas/routes.js';
+import { handleMonitorizacaoRoutes } from './modules/monitorizacao/routes.js';
+import { handleInternamentoRoutes } from './modules/internamento/routes.js';
 
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
-    const handled = await handleAnimaisRoutes(req, res, url.pathname);
+    const handled = await handleAnimaisRoutes(req, res, url.pathname)
+      || await handleConsultasRoutes(req, res, url)
+      || await handleMonitorizacaoRoutes(req, res, url)
+      || await handleInternamentoRoutes(req, res, url);
 
     if (!handled) {
       sendError(res, 404, 'Not Found', 'Endpoint não encontrado.', undefined, corsHeaders());
