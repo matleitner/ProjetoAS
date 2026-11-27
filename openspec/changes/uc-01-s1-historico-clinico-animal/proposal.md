@@ -12,8 +12,8 @@ Como o repositório ainda não contém código-fonte, framework, base de dados o
 
 - Formalizar o delta de requisitos (ADDED) da capability `animais` para o UC-01 – Fluxo básico, com o cenário CT-01.1.
 - Criar `docs/api/openapi.yaml` com os endpoints REST necessários ao slice UC-01.S1:
-  - `GET /api/v1/animals/{animalId}` — consulta os dados detalhados do animal (identificação e informação clínica disponível).
-  - `GET /api/v1/animals/{animalId}/clinical-history` — consulta o histórico clínico do animal (consultas, exames e outros registos).
+  - `GET /api/v1/animais/{animalId}` — consulta os dados detalhados do animal (identificação e informação clínica disponível).
+  - `GET /api/v1/animais/{animalId}/historico-clinico` — consulta o histórico clínico do animal (consultas, exames e outros registos).
 - Não iniciar implementação de código.
 
 ## Capabilities

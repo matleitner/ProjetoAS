@@ -11,7 +11,7 @@ Como o repositório ainda não contém código-fonte, framework, base de dados o
 ## What Changes
 
 - Formalizar o delta de requisitos (ADDED) da capability `consultas` para o tratamento da exceção por horário já indisponível na marcação de consulta veterinária (BR-02), com o cenário CT-02.2.
-- Atualizar o contrato OpenAPI (`docs/api/openapi.yaml`) no endpoint de marcação de consulta (`POST /api/consultas`) com a resposta de conflito de horário (`409 Conflict` / `422 Unprocessable Entity`) e o respetivo esquema de erro, sem criar endpoints fora do contrato.
+- Atualizar o contrato OpenAPI (`docs/api/openapi.yaml`) no endpoint de marcação de consulta (`POST /api/v1/consultas`) com a resposta de conflito de horário (`409 Conflict` / `422 Unprocessable Entity`) e o respetivo esquema de erro, sem criar endpoints fora do contrato.
 
 ## Capabilities
 

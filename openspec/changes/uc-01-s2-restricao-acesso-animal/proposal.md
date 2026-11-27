@@ -9,7 +9,7 @@ Enquanto o slice UC-01.S1 formalizou o fluxo básico de consulta centralizada (C
 ## What Changes
 
 - Formalizar o delta de requisitos (ADDED) da capability `animais` para o UC-01 – Restrição de acesso a dados de animais, com o cenário CT-01.2 (Acesso não autorizado a animal de terceiros).
-- Atualizar o contrato OpenAPI em `docs/api/openapi.yaml` para refletir o comportamento de autorização/erro nos endpoints do recurso de animais (`GET /api/v1/animals/{animalId}` e `GET /api/v1/animals/{animalId}/clinical-history`): respostas `403 Forbidden` (tutor autenticado sem associação com o animal) e `404 Not Found`, mantendo o schema de erro `Error` e os endpoints definidos no UC-01.S1.
+- Atualizar o contrato OpenAPI em `docs/api/openapi.yaml` para refletir o comportamento de autorização/erro nos endpoints do recurso de animais (`GET /api/v1/animais/{animalId}` e `GET /api/v1/animais/{animalId}/historico-clinico`): respostas `403 Forbidden` (tutor autenticado sem associação com o animal) e `404 Not Found`, mantendo o schema de erro `Error` e os endpoints definidos no UC-01.S1.
 - Não iniciar implementação de código.
 
 ## Capabilities

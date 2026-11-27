@@ -9,8 +9,8 @@ O slice UC-03.S1 formalizou a consulta da telemetria e dos parâmetros vitais do
 ## What Changes
 
 - Formalizar, em delta de requisito (`ADDED`), a capacidade `monitorizacao` com o requisito de alerta anómalo e o cenário `CT-03.2` (alerta visual prioritário por parâmetro anómalo, ex.: febre).
-- Atualizar `docs/api/openapi.yaml` com o endpoint `GET /api/animais/{id}/alertas` para consulta do estado de anomalia e dos alertas ativos do animal, incluindo os metadados da anomalia detetada.
-- Documentar no `design.md` a regra/limiar de deteção de anomalia e a tabela de mapeamento `Slice | Endpoint(s) (se aplicável) | Módulo(s)` para o slice UC-03.S2.
+- Atualizar `docs/api/openapi.yaml` com o endpoint `GET /api/v1/animais/{id}/alertas` para consulta do estado de anomalia e dos alertas ativos do animal, incluindo os metadados da anomalia detetada.
+- Documentar no `design.md` a regra/limiar de deteção de anomalia e a tabela de mapeamento `Slice | Endpoint(s) | Módulo(s)` para o slice UC-03.S2.
 - Não iniciar implementação de código.
 
 ## Capabilities
@@ -25,6 +25,6 @@ O slice UC-03.S1 formalizou a consulta da telemetria e dos parâmetros vitais do
 
 ## Impact
 
-- APIs: `docs/api/openapi.yaml` passa a incluir o endpoint `GET /api/animais/{id}/alertas` e os schemas de metadados de anomalia/alertas ativos do animal.
+- APIs: `docs/api/openapi.yaml` passa a incluir o endpoint `GET /api/v1/animais/{id}/alertas` e os schemas de metadados de anomalia/alertas ativos do animal.
 - Código, base de dados e CI: ainda não identificados no projeto; nenhuma implementação é iniciada neste change.
 - Documentação de referência: SRS (`assets/E4a-SRS/E4_SRS.pdf`), protótipo (`assets/E3-Prototipo/`), visão (`assets/E2-Visão/`).

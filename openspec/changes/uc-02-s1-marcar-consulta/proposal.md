@@ -12,8 +12,8 @@ Como o repositório ainda não contém código-fonte, framework, base de dados o
 
 - Formalizar o delta de requisitos (ADDED) da capability `consultas` para o UC-02 – Fluxo básico, com o cenário CT-02.1 (agendamento bem-sucedido de consulta, BR-02).
 - Criar `docs/api/openapi.yaml` com os endpoints REST necessários ao slice UC-02.S1:
-  - `GET /api/consultas` — lista as disponibilidades de marcação de consultas.
-  - `POST /api/consultas` — cria uma nova marcação de consulta veterinária.
+  - `GET /api/v1/consultas` — lista as disponibilidades de marcação de consultas.
+  - `POST /api/v1/consultas` — cria uma nova marcação de consulta veterinária.
 - Não iniciar implementação de código.
 
 ## Capabilities

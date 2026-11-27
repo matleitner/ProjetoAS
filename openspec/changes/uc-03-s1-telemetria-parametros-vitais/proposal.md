@@ -9,7 +9,7 @@ Enquanto os requisitos estavam concentrados na SRS (E4) e não existiam artefato
 ## What Changes
 
 - Formalizar, em delta de requisito (`ADDED`), a capacidade `monitorizacao` com o requisito de consulta de telemetria em tempo real (UC-03) e o cenário `CT-03.1` (visualização de telemetria).
-- Desenhar no `design.md` o endpoint REST `GET /api/animais/{id}/telemetria` e registá-lo no contrato OpenAPI (`docs/api/openapi.yaml`).
+- Desenhar no `design.md` o endpoint REST `GET /api/v1/animais/{id}/telemetria` e registá-lo no contrato OpenAPI (`docs/api/openapi.yaml`).
 
 ## Capabilities
 
@@ -23,5 +23,5 @@ Enquanto os requisitos estavam concentrados na SRS (E4) e não existiam artefato
 
 ## Impact
 
-- APIs: `docs/api/openapi.yaml` passa a incluir o endpoint `GET /api/animais/{id}/telemetria` para consulta de telemetria e leituras vitais.
+- APIs: `docs/api/openapi.yaml` passa a incluir o endpoint `GET /api/v1/animais/{id}/telemetria` para consulta de telemetria e leituras vitais.
 - Código, banco de dados e CI: ainda não identificados no projeto.

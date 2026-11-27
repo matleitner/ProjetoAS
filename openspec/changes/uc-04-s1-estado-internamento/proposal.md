@@ -12,7 +12,7 @@ Como o repositório ainda não contém código-fonte, framework, base de dados o
 
 - Formalizar o delta de requisitos (ADDED) da capability `internamento` para o UC-04 – Fluxo básico, com o cenário CT-04.1 (consulta em tempo real do estado de internamento, BR-01, BR-03, RNF-01).
 - Atualizar `docs/api/openapi.yaml` com o endpoint REST necessário ao slice UC-04.S1 para consultar o estado e evolução do internamento do animal:
-  - `GET /api/animais/{id}/internamento` — consulta o estado atual e a evolução do internamento do animal (caminho presente no contrato, alinhado com o exemplo indicado para este slice).
+  - `GET /api/v1/animais/{id}/internamento` — consulta o estado atual e a evolução do internamento do animal (caminho presente no contrato, alinhado com o exemplo indicado para este slice).
 - Não iniciar implementação de código.
 
 ## Capabilities
