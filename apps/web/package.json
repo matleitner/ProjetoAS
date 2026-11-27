@@ -1,0 +1,11 @@
+{
+  "name": "@miau/web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "next": "^16.4.6",
+    "react": "19.1.10",
+    "react-dom": "19.1.10"
+  }
+}

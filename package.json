@@ -1,0 +1,31 @@
+{
+  "name": "miau",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:api": "node apps/api/src/server.js",
+    "dev:web": "next dev apps/web -p 3000",
+    "build:web": "next build apps/web",
+    "start:web": "next start apps/web -p 3000",
+    "db:local": "bash apps/api/scripts/init-local-mysql.sh",
+    "db:setup": "node apps/api/scripts/setup-db.js",
+    "db:reset": "node apps/api/scripts/reset-db.js",
+    "test:e2e": "playwright test",
+    "test:e2e:ct-01.1": "playwright test tests/e2e/ct-01.1.spec.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "9.0.3",
+    "mysql2": "3.24.6"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
