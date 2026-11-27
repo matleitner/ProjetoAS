@@ -1,0 +1,733 @@
+openapi: 3.0.3
+info:
+  title: MIAU API (Monitorize Internal Animals Unit)
+  version: 1.0.0
+  description: >-
+    Contrato OpenAPI do MIAU em conformidade com as ADRs do projeto:
+    - ADR-001: Backend Node.js / Base de dados MySQL alojada na UE (RGPD).
+    - ADR-002: Testes E2E (Playwright) e contratos validados por respostas consistentes.
+    - ADR-003: Fronteira estrita via API RESTful desacoplada dos clientes (Next.js/Mobile).
+
+    Slices da SRS cobertas por este contrato:
+    UC-01.S1 - Consultar dados detalhados do animal (CT-01.1, BR-01, RNF-01);
+    UC-01.S2 - Consultar o histórico clínico do animal (CT-01.2, BR-01, RNF-01);
+    UC-02.S1 - Listar disponibilidades de marcação de consulta (CT-02.1, BR-01, BR-02);
+    UC-02.S2 - Marcar consulta veterinária, com exceção de conflito de horário (CT-02.2, BR-02);
+    UC-03.S1 - Consultar a telemetria e os parâmetros vitais do animal (CT-03.1, BR-03, RNF-02);
+    UC-03.S2 - Consultar o estado de anomalia e os alertas ativos do animal (CT-03.2, BR-03, BR-04, RNF-02);
+    UC-04.S1 - Consultar o estado e a evolução do internamento do animal (CT-04.1, BR-01, BR-03, RNF-01).
+
+servers:
+  - url: /
+    description: Servidor da API Node.js (Ambiente de produção/testes UE)
+
+tags:
+  - name: animais
+    description: Consulta de dados e histórico clínico de animais
+  - name: consultas
+    description: Marcação de consultas veterinárias
+  - name: monitorizacao
+    description: Estado de anomalia e alertas ativos da telemetria do animal
+  - name: internamento
+    description: Estado e evolução do internamento do animal
+
+paths:
+  /api/v1/animais/{animalId}:
+    get:
+      tags:
+        - animais
+      summary: Consultar dados detalhados do animal
+      description: >-
+        Consulta os dados de identificação e a informação clínica disponível de
+        um animal associado à conta do tutor autenticado (UC-01.S1 / UC-01.S2).
+      operationId: getAnimalDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: animalId
+          in: path
+          required: true
+          description: Identificador do animal.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Dados detalhados do animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnimalDetails'
+        '401':
+          description: Não autenticado (Token JWT inválido ou em falta).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Forbidden - o tutor autenticado não possui associação com o animal
+            (BR-01). Os dados clínicos não são divulgados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/animais/{animalId}/historico-clinico:
+    get:
+      tags:
+        - animais
+      summary: Consultar histórico clínico do animal
+      description: >-
+        Consulta o histórico clínico do animal (consultas, exames e outros
+        registos) para um tutor autenticado associado ao animal (UC-01.S1 / UC-01.S2).
+      operationId: getAnimalClinicalHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: animalId
+          in: path
+          required: true
+          description: Identificador do animal.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Histórico clínico do animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClinicalHistory'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Forbidden - o tutor autenticado não possui associação com o animal
+            (BR-01). Os dados clínicos não são divulgados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/consultas:
+    get:
+      tags:
+        - consultas
+      summary: Listar disponibilidades de marcação de consulta
+      description: >-
+        Lista as disponibilidades de marcação de consultas (veterinário/horário)
+        para os animais do tutor autenticado (UC-02.S1).
+      operationId: listConsultas
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: animalId
+          in: query
+          required: false
+          description: Filtrar por animal.
+          schema:
+            type: string
+            format: uuid
+        - name: veterinarioId
+          in: query
+          required: false
+          description: Filtrar por veterinário/clínica.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de disponibilidades.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConsultaResponse'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - consultas
+      summary: Marcar consulta veterinária
+      description: >-
+        Cria uma nova marcação de consulta veterinária submetida pelo tutor
+        autenticado, em horário disponível e sem sobreposição de agendamentos (BR-02).
+        Slices UC-02.S1 (Fluxo básico) e UC-02.S2 (Exceção E1 - conflito de horário).
+      operationId: markConsulta
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsultaRequest'
+      responses:
+        '201':
+          description: Marcação de consulta criada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsultaResponse'
+        '400':
+          description: Payload inválido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal ou veterinário/clínica não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: >-
+            Conflito de horário - o horário selecionado encontra-se ocupado ou
+            indisponível (BR-02.1). A marcação não é registada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: >-
+            Unprocessable Entity - a marcação solicitada não pode ser processada
+            pelas regras de negócio (BR-02).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/animais/{id}/telemetria:
+    get:
+      tags:
+        - monitorizacao
+      summary: Consultar a telemetria e os parâmetros vitais do animal
+      description: >-
+        Consulta a leitura mais recente e, quando indicada uma janela temporal,
+        a série de telemetria e parâmetros vitais do animal internado, com o
+        timestamp de cada leitura (UC-03.S1, BR-03, RNF-02, CT-03.1).
+      operationId: consultarTelemetriaAnimal
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador do animal internado.
+          schema:
+            type: string
+            format: uuid
+        - name: desde
+          in: query
+          required: false
+          description: Início da janela temporal (UTC).
+          schema:
+            type: string
+            format: date-time
+        - name: ate
+          in: query
+          required: false
+          description: Fim da janela temporal (UTC).
+          schema:
+            type: string
+            format: date-time
+        - name: limite
+          in: query
+          required: false
+          description: Número máximo de leituras devolvidas.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+      responses:
+        '200':
+          description: Leitura mais recente e/ou série temporal de telemetria do animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetriaSerie'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Veterinário sem permissão para aceder ao animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/animais/{id}/alertas:
+    get:
+      tags:
+        - monitorizacao
+      summary: Consultar o estado de anomalia e os alertas ativos do animal
+      description: >-
+        Consulta o estado de anomalia e os alertas ativos do animal a partir da
+        telemetria recebida, para destaque visual prioritário no dashboard
+        clínico (UC-03.S2, BR-03, BR-04, RNF-02).
+      operationId: consultarAlertasAtivosAnimal
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador do animal
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Estado de anomalia e alertas ativos do animal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertList'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Utilizador sem permissão para aceder ao animal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/animais/{id}/internamento:
+    get:
+      tags:
+        - internamento
+      summary: Consultar o estado e a evolução do internamento do animal
+      description: >-
+        Consulta o estado atual, a equipa responsável, a previsão de alta (se
+        disponível), a telemetria mais recente e a evolução do internamento de
+        um animal associado à conta do tutor autenticado (UC-04.S1, CT-04.1).
+      operationId: consultarEstadoInternamentoAnimal
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador do animal.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Estado atual e evolução do internamento do animal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Internamento'
+        '401':
+          description: Não autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: >-
+            Forbidden - o tutor autenticado não possui associação com o animal
+            (BR-01). Os dados do internamento não são divulgados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Animal ou internamento não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-11-23T22:15:00Z'
+        status:
+          type: integer
+          description: Código HTTP de resposta.
+          example: 409
+        error:
+          type: string
+          description: Classificação curta do erro.
+          example: Conflict
+        message:
+          type: string
+          description: Mensagem informativa.
+          example: A operação não pôde ser concluída.
+        details:
+          type: object
+          description: Detalhes complementares para suporte a testes E2E (Playwright).
+          properties:
+            veterinarioId:
+              type: string
+              format: uuid
+              description: Identificador do veterinário/clínica com o conflito.
+            dataHora:
+              type: string
+              format: date-time
+              description: Data e hora solicitada.
+            conflictsWith:
+              type: string
+              description: Identificador do agendamento em conflito.
+    AnimalDetails:
+      type: object
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        species:
+          type: string
+        breed:
+          type: string
+        birthDate:
+          type: string
+          format: date
+        weight:
+          type: number
+          format: float
+        microchip:
+          type: string
+        clinicalSummary:
+          type: string
+          description: Informação clínica disponível (resumo).
+    ClinicalRecord:
+      type: object
+      required:
+        - id
+        - type
+        - date
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [consultation, exam, record]
+        date:
+          type: string
+          format: date-time
+        description:
+          type: string
+        veterinarian:
+          type: string
+    ClinicalHistory:
+      type: object
+      properties:
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClinicalRecord'
+    ConsultaRequest:
+      type: object
+      required:
+        - animalId
+        - veterinarioId
+        - dataHora
+      properties:
+        animalId:
+          type: string
+          format: uuid
+          description: Identificador do animal associado à conta do tutor.
+        veterinarioId:
+          type: string
+          format: uuid
+          description: Identificador do veterinário/clínica para o qual a consulta é marcada.
+        dataHora:
+          type: string
+          format: date-time
+          description: Data e hora solicitada para a marcação.
+        motivo:
+          type: string
+          description: Motivo da consulta.
+          example: Vacinação
+    ConsultaResponse:
+      type: object
+      required:
+        - consultaId
+        - animalId
+        - veterinarioId
+        - dataHora
+      properties:
+        consultaId:
+          type: string
+          format: uuid
+        animalId:
+          type: string
+          format: uuid
+        veterinarioId:
+          type: string
+          format: uuid
+        dataHora:
+          type: string
+          format: date-time
+    Alert:
+      type: object
+      required:
+        - alertId
+        - animalId
+        - type
+        - parameter
+        - value
+        - limit
+        - detectedAt
+        - status
+      properties:
+        alertId:
+          type: string
+          format: uuid
+        animalId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          description: "Tipo de anomalia detetada (ex.: febre)."
+          enum:
+            - FEVER
+            - BRADICARDIA
+        parameter:
+          type: string
+          description: Parâmetro vital com leitura fora do intervalo de normalidade.
+          enum:
+            - TEMPERATURE
+            - HEART_RATE
+            - RESPIRATORY_RATE
+        value:
+          type: number
+          description: Valor da leitura que detetou a anomalia.
+        limit:
+          type: number
+          description: "Limiar de normalidade aplicado (ex.: 39,0 °C para febre)."
+        detectedAt:
+          type: string
+          format: date-time
+          description: Data e hora da leitura de telemetria (BR-03).
+        status:
+          type: string
+          description: Estado do alerta na lista de alertas ativos.
+          enum:
+            - ACTIVE
+    AlertList:
+      type: object
+      required:
+        - animalId
+        - anomalyState
+        - alerts
+      properties:
+        animalId:
+          type: string
+          format: uuid
+        anomalyState:
+          type: string
+          description: Estado de anomalia atual do animal.
+          enum:
+            - NORMAL
+            - ANOMALOUS
+        alerts:
+          type: array
+          description: Alertas ativos do animal.
+          items:
+            $ref: '#/components/schemas/Alert'
+        activeCount:
+          type: integer
+    Internamento:
+      type: object
+      required:
+        - animalId
+        - estadoAtual
+      properties:
+        animalId:
+          type: string
+          format: uuid
+          description: Identificador do animal internado.
+        estadoAtual:
+          type: string
+          description: Estado atual do internamento do animal.
+        responsavel:
+          type: string
+          description: Equipa veterinária responsável pelo internamento.
+        previsaoAlta:
+          nullable: true
+          description: Previsão de alta do internamento, quando disponível.
+          type: object
+          properties:
+            previstaPara:
+              type: string
+              format: date-time
+            observacoes:
+              type: string
+        telemetriaMaisRecente:
+          $ref: '#/components/schemas/Telemetria'
+        evolucao:
+          type: array
+          description: Registos de evolução do internamento.
+          items:
+            $ref: '#/components/schemas/RegistoEvolucao'
+    TelemetriaSerie:
+      type: object
+      description: Leitura mais recente e/ou série temporal de telemetria do animal (UC-03.S1).
+      required:
+        - animalId
+        - leituras
+      properties:
+        animalId:
+          type: string
+          format: uuid
+          description: Identificador do animal internado.
+        leituras:
+          type: array
+          description: Leituras de telemetria ordenadas por data de recolha (BR-03).
+          items:
+            $ref: '#/components/schemas/Telemetria'
+    Telemetria:
+      type: object
+      description: Leitura de telemetria de um animal internado (BR-03).
+      properties:
+        recolhidaEm:
+          type: string
+          format: date-time
+          description: Data e hora de recolha da leitura (BR-03).
+        sinaisVitais:
+          type: object
+          additionalProperties: true
+          description: Parâmetros vitais mais recentes recolhidos pelos sensores.
+        animalId:
+          type: string
+          format: uuid
+          description: Identificador do animal a que a leitura pertence.
+        temperatura:
+          type: number
+          format: double
+          description: Temperatura corporal lida.
+        frequenciaCardiaca:
+          type: integer
+          description: Frequência cardíaca lida.
+        frequenciaRespiratoria:
+          type: integer
+          description: Frequência respiratória lida.
+    RegistoEvolucao:
+      type: object
+      required:
+        - registadoEm
+        - estado
+      properties:
+        registadoEm:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          description: Estado do internamento após o registo.
+        descricao:
+          type: string

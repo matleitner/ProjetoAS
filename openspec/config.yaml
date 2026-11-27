@@ -19,6 +19,12 @@ context: |
   - Nao foram identificados codigo-fonte, framework, banco de dados ou CI no repositorio.
   - Documentacao e requisitos estao concentrados em openspec/ e assets/.
 
+  Arquitetura e desenho:
+  - Arquitetura: docs/design/E5-Desenho.md. Modulos: Apresentacao (Next.js), API REST (Node.js), Dominio/Servicos, Persistencia (MySQL na UE) e Integracoes/Adaptadores.
+  - Decisoes: docs/adr/ (ADR-001 stack Next.js, Node.js, MySQL na UE, Playwright; ADR-002 estrategia de teste; ADR-003 fronteira via API RESTful).
+  - Contrato da API: docs/api/openapi.yaml. Nao criar endpoints fora do contrato.
+  - Integracoes (dispositivos IoT, notificacoes e sistemas externos) atraves de adaptadores, com simulador.
+
   Convencoes:
   - Requisitos obrigatorios usam SHALL.
   - Cenarios usam WHEN e THEN.
@@ -28,10 +34,15 @@ rules:
   proposal:
     - Manter contexto, problema, solucao e requisitos na proposta.
     - Nao iniciar implementacao durante a proposta.
+  design:
+    - Indicar os modulos afetados (E5) e os endpoints de docs/api/openapi.yaml envolvidos.
+    - Referir os ADR aplicaveis; um desvio a arquitetura exige um ADR novo.
   specs:
     - Escrever requisitos com SHALL.
     - Criar cenarios WHEN e THEN.
     - Usar deltas apenas em mudancas; specs principais nao devem conter cabecalhos de delta.
   tasks:
+    - O nome de cada teste começa pelo ID do caso de teste (CT-nn.k).
+    - Os testes do slice passam antes do arquivo.
     - Decompor trabalho em tarefas pequenas e verificaveis.
     - Marcar tarefa como concluida apenas quando implementada.
